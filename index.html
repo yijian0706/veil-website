@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>VEIL 01 · One headset. Every world.</title>
+<meta name="description" content="VEIL 01 is a concept mixed-reality headset: a spatial desktop, an immersive cinema and a world you can step into. Concept project.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,900&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b0c0f'/%3E%3Cpath d='M5 12c0-3 3-4 11-4s11 1 11 4v5c0 3-2 5-5 5-2 0-3-2-6-2s-4 2-6 2c-3 0-5-2-5-5z' fill='%23d6d9de'/%3E%3C/svg%3E">
+<style>
+:root{
+  --root:clamp(13.5px,min(.8vw + 4.5px,1.6vh + 2px),22px);
+  --bg:#050608; --bg2:#0b0c0f; --ink:#f3f4f6; --mute:#8b9097; --dim:#5b6068; --line:rgba(255,255,255,.1);
+  --glass:rgba(28,30,36,.55); --glass-line:rgba(255,255,255,.14); --accent:#e7e9ec;
+  --sans:"Geist",system-ui,sans-serif; --display:"Archivo","Geist",sans-serif;
+  --wrap:min(92vw,84rem); --edge:calc((100% - var(--wrap)) / 2); /* fixed/absolute bits line up with .wrap content */
+}
+@media (max-width:760px){:root{--root:clamp(13px,min(4.2667vw,1.97vh),18px)}}
+html{font-size:var(--root);background:var(--bg)}
+*,*::before,*::after{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font:400 1rem/1.5 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:clip}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid #fff;outline-offset:3px;border-radius:.4rem}
+.wrap{width:var(--wrap);margin-inline:auto}
+.eyebrow{font:500 .72rem var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--mute)}
+
+/* fixed 3D layer */
+#gl{position:fixed;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;transition:opacity .6s}
+#loadbar{position:fixed;left:0;top:0;height:2px;width:0;background:#fff;z-index:60;transition:width .4s,opacity .6s}
+
+/* nav */
+.nav{position:fixed;top:1rem;left:var(--edge);right:var(--edge);z-index:40;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
+.pill{pointer-events:auto;display:flex;align-items:center;gap:1.6rem;padding:.55rem 1.3rem .55rem 1rem;border-radius:999px;background:rgba(20,21,25,.6);border:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.brand{font:900 1.35rem/1 var(--display);font-stretch:110%;letter-spacing:.02em;display:flex;align-items:flex-start;gap:.1rem}
+.brand sup{font:600 .5rem var(--sans);margin-top:.1rem}
+.pill a.lnk{font-size:.88rem;color:#c9ccd1;transition:color .2s}
+.pill a.lnk:hover{color:#fff}
+.buy{pointer-events:auto;padding:.75rem 1.3rem;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:rgba(20,21,25,.6);backdrop-filter:blur(18px);font-size:.88rem;transition:background-color .25s,color .25s}
+.buy:hover{background:#fff;color:#000}
+.index{position:fixed;right:var(--edge);top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:.9rem;align-items:flex-end;opacity:0;visibility:hidden;transition:opacity .4s,visibility .4s}
+.index.on{opacity:1;visibility:visible}
+.index.on.over{opacity:0;visibility:hidden} /* hidden while the OS window fills the screen, it would sit on its edge */
+.index a{display:flex;gap:.6rem;align-items:center;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);transition:color .3s}
+.index a b{font-weight:500;color:inherit}
+.index a::after{content:"";width:1.4rem;height:1px;background:currentColor;transition:width .3s}
+.index a.on{color:#fff}.index a.on::after{width:2.6rem}
+
+/* hero */
+.hero{position:relative;height:100svh;min-height:36rem;overflow:hidden;background:radial-gradient(60% 55% at 50% 45%,#141619 0%,var(--bg) 70%)}
+.mark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:1;font:900 min(34vw,72svh)/.8 var(--display);font-stretch:68%;letter-spacing:.015em;user-select:none}
+.mark span{display:inline-block;color:transparent;
+  background:
+    linear-gradient(100deg,transparent 30%,rgba(255,214,170,.55) 46%,rgba(255,255,255,.9) 50%,transparent 62%) var(--sweep,0%) 0/300% 100% no-repeat,
+    repeating-linear-gradient(0deg,rgba(255,255,255,.07) 0 1px,rgba(0,0,0,.05) 1px 3px),
+    linear-gradient(180deg,#3d4148 0%,#c9cdd3 22%,#f4f5f7 34%,#8d929a 46%,#d9dce0 60%,#5b6068 82%,#2a2d32 100%);
+  -webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 1.5rem 3rem rgba(0,0,0,.6))}
+.hero-foot{position:absolute;left:0;right:0;bottom:2.2rem;z-index:3;display:flex;justify-content:space-between;padding:0 var(--edge);font:900 1.75rem/1.02 var(--display);font-stretch:100%;text-transform:uppercase;letter-spacing:.01em;pointer-events:none}
+.hero-foot p:last-child{text-align:right}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* story sections over the 3D layer */
+.story{position:relative;z-index:3}
+.chapter{height:150svh;text-align:center;pointer-events:none}
+.chapter .in{position:sticky;top:0;height:100svh;display:flex;flex-direction:column;align-items:center;padding-top:7.5rem;text-shadow:0 .2rem 1.5rem rgba(0,0,0,.6)}
+.chapter h2{font:500 clamp(2rem,3.6vw,3.4rem)/1.05 var(--sans);letter-spacing:-.035em;margin-top:.8rem}
+.chapter p.lede{color:var(--mute);max-width:30rem;margin-top:1rem;font-size:1.05rem}
+.chapter .in.side{align-items:flex-start;text-align:left;justify-content:center;padding:0 12rem 0 56vw}
+.chapter .in.side .lede{max-width:22rem}
+.chapter .in.side .stat-row{position:static;justify-content:flex-start;gap:3rem;margin-top:2.2rem}
+.chapter .in.low{justify-content:flex-end;padding:0 0 13vh}
+.chapter .in.low .wave{top:35%}
+.caption{position:absolute;left:0;right:0;bottom:3rem;text-align:center;color:var(--mute);font-size:1rem;opacity:0}
+.chapter .stat-row{position:absolute;bottom:3rem;left:0;right:0;display:flex;justify-content:center;gap:4rem}
+.stat-row div{text-align:center}
+.stat-row strong{display:block;font:500 2.2rem/1 var(--sans);letter-spacing:-.04em}
+.stat-row span{font-size:.8rem;color:var(--mute)}
+.wave{position:absolute;left:50%;top:58%;width:16rem;height:16rem;transform:translate(-50%,-50%);pointer-events:none}
+.wave i{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(255,255,255,.35);opacity:0;animation:ring 3s infinite}
+.wave i:nth-child(2){animation-delay:1s}.wave i:nth-child(3){animation-delay:2s}
+@keyframes ring{0%{transform:scale(.3);opacity:.7}100%{transform:scale(1.6);opacity:0}}
+
+/* spatial OS */
+#space{position:relative;z-index:3;background:var(--bg);padding:7rem 0 6rem}
+.sec-head{text-align:center;margin-bottom:2.5rem}
+.sec-head h2{font:500 clamp(2rem,3.6vw,3.4rem)/1.05 var(--sans);letter-spacing:-.035em;margin-top:.8rem}
+.sec-head p{color:var(--mute);margin-top:.8rem}
+.os{position:relative;width:min(80vw,78rem);margin:0 auto;aspect-ratio:16/9;border-radius:1.8rem;overflow:hidden;border:1px solid var(--line);box-shadow:0 3rem 8rem -2rem rgba(0,0,0,.8);isolation:isolate}
+.os .wall{position:absolute;inset:-4%;width:108%;height:108%;max-width:none;object-fit:cover;transition:opacity .9s,transform 12s linear;z-index:-2}
+.os .wall.next{opacity:0}
+.os::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,.1) 40%,rgba(0,0,0,.45));z-index:-1;transition:background-color .6s}
+.os.focus::after{background-color:rgba(0,0,0,.55)}
+.os-top{position:absolute;top:1rem;left:1.2rem;right:1.2rem;display:flex;justify-content:space-between;font-size:.78rem;color:rgba(255,255,255,.8);letter-spacing:.06em}
+.glass{background:var(--glass);border:1px solid var(--glass-line);backdrop-filter:blur(26px) saturate(1.4);-webkit-backdrop-filter:blur(26px) saturate(1.4);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 1.5rem 3rem -1rem rgba(0,0,0,.6);border-radius:1.4rem}
+.win{position:absolute;left:50%;top:47%;transform:translate(-50%,-50%) scale(.96);width:min(78%,52rem);padding:1.4rem;opacity:0;visibility:hidden;transition:opacity .45s,transform .55s cubic-bezier(.2,.8,.2,1),visibility .45s}
+.win.show{opacity:1;visibility:visible;transform:translate(-50%,-50%) scale(1)}
+.win-bar{display:flex;align-items:center;gap:.8rem;margin-bottom:1rem}
+.win-bar h3{font:500 1.1rem var(--sans);flex:1}
+.ic-btn{width:2.2rem;height:2.2rem;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.1);transition:background-color .2s}
+.ic-btn:hover{background:rgba(255,255,255,.22)}
+.back{font-size:.82rem;padding:.4rem .8rem;border-radius:999px;background:rgba(255,255,255,.1);white-space:nowrap}
+.apps{display:grid;grid-template-columns:repeat(6,1fr);gap:.8rem}
+.app{display:flex;flex-direction:column;align-items:center;gap:.5rem;padding:.9rem .4rem;border-radius:1rem;transition:background-color .2s,transform .2s;text-align:center}
+.app:hover{background:rgba(255,255,255,.08);transform:translateY(-2px)}
+.app i{width:3.4rem;height:3.4rem;border-radius:50%;display:grid;place-items:center;background:linear-gradient(160deg,rgba(255,255,255,.28),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.2)}
+.app i svg{width:1.4rem;height:1.4rem}
+.app b{font-weight:500;font-size:.88rem}
+.app small{font-size:.68rem;color:rgba(255,255,255,.6);line-height:1.25}
+.feat{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-top:1rem}
+.feat button{position:relative;height:7.5rem;border-radius:1rem;overflow:hidden;text-align:left;padding:.9rem}
+.feat img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-1;transition:transform .6s}
+.feat button::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(0,0,0,.7));z-index:-1}
+.feat button:hover img{transform:scale(1.06)}
+.feat small{font-size:.62rem;letter-spacing:.16em;color:rgba(255,255,255,.75)}
+.feat b{display:block;font-weight:500;font-size:.95rem;margin-top:.2rem}
+.feat span{position:absolute;right:.8rem;bottom:.8rem;font-size:.72rem;padding:.2rem .55rem;border-radius:999px;background:rgba(255,255,255,.18)}
+.dock{position:absolute;left:50%;bottom:1.1rem;transform:translateX(-50%);display:flex;gap:.3rem;padding:.35rem;border-radius:999px}
+.dock button{padding:.5rem 1.1rem;border-radius:999px;font-size:.82rem;color:rgba(255,255,255,.8);transition:background-color .2s,color .2s}
+.dock button.on,.dock button:hover{background:rgba(255,255,255,.18);color:#fff}
+.replay{position:absolute;right:1.1rem;bottom:1.25rem;font-size:.75rem;color:rgba(255,255,255,.75);padding:.4rem .8rem;border-radius:999px;background:rgba(0,0,0,.35)}
+/* app contents */
+.desk{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:.8rem}
+.desk .card{background:rgba(255,255,255,.07);border-radius:1rem;padding:1rem;font-size:.82rem;min-height:12rem}
+.desk h4{font-weight:500;margin-bottom:.6rem}
+.desk li{list-style:none;padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.75);display:flex;justify-content:space-between}
+.desk .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:.25rem;text-align:center;font-size:.7rem;color:rgba(255,255,255,.7)}
+.desk .cal span.t{background:#fff;color:#000;border-radius:50%}
+.bar{height:.4rem;border-radius:1rem;background:rgba(255,255,255,.12);margin:.4rem 0 .9rem;overflow:hidden}
+.bar i{display:block;height:100%;background:#fff;border-radius:1rem}
+.url{display:flex;gap:.5rem;align-items:center;padding:.5rem .9rem;border-radius:999px;background:rgba(0,0,0,.3);font-size:.8rem;color:rgba(255,255,255,.75);margin-bottom:.9rem}
+.page{display:grid;grid-template-columns:1.1fr 1fr;gap:1rem;align-items:center;background:rgba(255,255,255,.06);border-radius:1rem;padding:1.2rem}
+.page h4{font:500 1.5rem/1.1 var(--sans);letter-spacing:-.03em}
+.page p{font-size:.82rem;color:rgba(255,255,255,.7);margin:.6rem 0 1rem}
+.page img{border-radius:.8rem;aspect-ratio:4/3;object-fit:cover}
+.pbtn{display:inline-flex;align-items:center;gap:.4rem;padding:.55rem 1rem;border-radius:999px;background:#fff;color:#000;font-size:.82rem;font-weight:500}
+.pbtn.ghost{background:rgba(255,255,255,.12);color:#fff}
+.notes textarea{width:100%;height:11rem;resize:none;border:0;border-radius:1rem;background:rgba(0,0,0,.25);color:#fff;font:400 .95rem/1.6 var(--sans);padding:1rem}
+.row{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.9rem}
+.walls{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem}
+.walls button{position:relative;border-radius:1rem;overflow:hidden;aspect-ratio:4/3;text-align:left;outline:2px solid transparent;outline-offset:2px;transition:outline-color .2s}
+.walls button.on{outline-color:#fff}
+.walls img{width:100%;height:100%;object-fit:cover}
+.walls b{position:absolute;left:.7rem;bottom:.6rem;font-weight:500;font-size:.85rem;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.screen{position:relative;border-radius:1rem;overflow:hidden;aspect-ratio:21/9;background:#000}
+.screen img{width:100%;height:100%;object-fit:cover;transform:scale(1.02);transition:transform 20s linear}
+.screen.playing img{transform:scale(1.18)}
+.screen .t{position:absolute;left:1rem;bottom:1rem;right:1rem;display:flex;align-items:center;gap:.8rem;font-size:.8rem}
+.screen .t .bar{flex:1;margin:0}
+.win.wide{width:min(84%,60rem)}
+.orbit-stage{text-align:center;padding:2rem 1rem}
+.orbit-stage h4{font:500 2rem/1.1 var(--sans);letter-spacing:-.04em;min-height:2.3rem}
+.orbit-stage p{color:rgba(255,255,255,.7);margin:.8rem 0 1.4rem;font-size:.9rem}
+.toast{position:absolute;left:50%;top:4rem;transform:translate(-50%,-.5rem);padding:.55rem 1rem;border-radius:999px;font-size:.82rem;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.os.orbiting .wall{transform:scale(1.25)}
+
+/* journeys */
+#journeys{position:relative;z-index:3;background:var(--bg);padding:6rem 0}
+.jgrid{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:1rem}
+.jcard{position:relative;height:30rem;border-radius:1.5rem;overflow:hidden;text-align:left;padding:1.6rem;display:flex;flex-direction:column;justify-content:flex-end;isolation:isolate}
+.jcard img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;transition:transform 1s cubic-bezier(.2,.8,.2,1)}
+.jcard::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,transparent 35%,rgba(0,0,0,.75))}
+.jcard:hover img{transform:scale(1.06)}
+.jcard small{font-size:.68rem;letter-spacing:.18em;color:rgba(255,255,255,.75)}
+.jcard b{font:500 1.7rem/1.1 var(--sans);letter-spacing:-.03em;margin:.4rem 0 .2rem}
+.jcard span{color:rgba(255,255,255,.7);font-size:.9rem}
+.jcard .play{position:absolute;right:1.4rem;bottom:1.4rem;width:3rem;height:3rem;border-radius:50%;display:grid;place-items:center}
+.player{position:fixed;inset:0;z-index:80;background:#000;overflow:hidden;opacity:0;visibility:hidden;transition:opacity .5s,visibility .5s}
+.player.show{opacity:1;visibility:visible;transition:opacity .5s,visibility 0s}
+.player img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.2s}
+.player img.on{opacity:1;animation:kb 7s linear forwards}
+@keyframes kb{from{transform:scale(1)}to{transform:scale(1.12)}}
+.player::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35),transparent 30%,transparent 60%,rgba(0,0,0,.7))}
+.p-ui{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;justify-content:space-between;padding:1.5rem 2rem 2rem}
+.p-top{display:flex;justify-content:space-between;align-items:center}
+.p-title small{font-size:.72rem;letter-spacing:.18em;color:rgba(255,255,255,.75)}
+.p-title h2{font:500 clamp(2.2rem,5vw,4.5rem)/1 var(--sans);letter-spacing:-.04em;margin-top:.4rem}
+.p-ctl{display:flex;align-items:center;gap:1rem;margin-top:1.4rem}
+.p-ctl .bar{flex:1;margin:0;height:.25rem}
+.p-ctl .bar i{width:0}
+
+/* beyond */
+#beyond{position:relative;z-index:3;height:110svh;overflow:hidden;display:grid;place-items:center;text-align:center}
+#beyond img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-1;transform:scale(1.25)}
+#beyond::after{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(60% 60% at 50% 50%,rgba(0,0,0,.15),rgba(0,0,0,.75))}
+#beyond h2{font:500 clamp(2.4rem,5.5vw,5.2rem)/1 var(--sans);letter-spacing:-.045em;max-width:14ch}
+
+/* CTA + footer */
+#cta{position:relative;z-index:3;background:var(--bg);text-align:center;padding:9rem 0 7rem}
+#cta h2{font:500 clamp(2.8rem,7vw,6.5rem)/.95 var(--sans);letter-spacing:-.055em}
+#cta p{color:var(--mute);margin:1.4rem auto 2rem;max-width:26rem;font-size:1.05rem}
+.shop{display:inline-flex;align-items:center;gap:.6rem;padding:.95rem 1.8rem;border-radius:999px;background:linear-gradient(180deg,#2a2d33,#14161a);border:1px solid rgba(255,255,255,.25);box-shadow:0 0 2.5rem rgba(160,180,255,.18),inset 0 1px 0 rgba(255,255,255,.2);font-weight:500;transition:transform .25s,box-shadow .25s}
+.shop:hover{transform:translateY(-2px);box-shadow:0 0 3.5rem rgba(160,180,255,.3),inset 0 1px 0 rgba(255,255,255,.25)}
+.price{margin-top:1.4rem;font-size:.85rem;color:var(--mute)}
+.price b{color:#fff;font-weight:500;margin-left:.6rem}
+.again{margin-top:1.6rem;font-size:.82rem;color:var(--mute)}
+.again:hover{color:#fff}
+footer{position:relative;z-index:3;background:var(--bg);border-top:1px solid var(--line);padding:4rem 0 2.5rem}
+.f-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:3rem}
+.f-grid h3{font:500 1.9rem/1.12 var(--sans);letter-spacing:-.035em;margin-top:1rem}
+.f-grid p{color:var(--mute);margin-top:1rem;font-size:.92rem}
+.f-grid h4{font-size:.78rem;color:var(--mute);font-weight:400;margin-bottom:1rem}
+.f-grid ul{list-style:none;padding:0}
+.f-grid li a{display:flex;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid var(--line);font-size:.92rem;transition:color .2s,padding .3s}
+.f-grid li a:hover{padding-left:.4rem}
+.legal{display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-top:4rem;font-size:.75rem;color:var(--dim)}
+
+/* responsive */
+@media (max-width:900px){
+  .pill .lnk{display:none}
+  .index{display:none}
+  .apps{grid-template-columns:repeat(3,1fr)}
+  .os{aspect-ratio:auto;height:44rem}
+  .win{width:90%;top:48%}
+  .win.wide{width:94%}
+  .desk{grid-template-columns:1fr}.desk .card:not(:first-child){display:none}
+  .page{grid-template-columns:1fr}.page img{display:none}
+  .jgrid,.f-grid{grid-template-columns:1fr}
+  .jcard{height:20rem}
+  .hero-foot{font-size:1.25rem}
+  .mark{align-items:flex-start;padding-top:20svh}
+  .chapter .in.side,.chapter .in.low{align-items:center;text-align:center;justify-content:flex-start;padding:6rem 1.2rem 0}
+  .chapter .in.side .stat-row{position:absolute;justify-content:center}
+  .chapter{padding-top:6rem}
+  .chapter .stat-row{gap:2rem}
+}
+@media (max-width:760px){
+  .feat{grid-template-columns:1fr}.feat button:not(:first-child){display:none}
+  .app{padding:.6rem .3rem}.app small{display:none}.app i{width:3rem;height:3rem}
+  .feat button{height:6rem}
+  #expand{display:none}
+  .os{height:40rem}
+  .dock button{padding:.45rem .8rem}
+  .replay{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition-duration:.01ms!important}
+}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head>
+<body>
+<div id="loadbar"></div>
+<canvas id="gl" aria-hidden="true"></canvas>
+
+<header class="nav">
+  <nav class="pill" aria-label="Primary">
+    <a class="brand" href="#top" aria-label="VEIL home">VEIL<sup>01</sup></a>
+    <a class="lnk" href="#layers">Experience</a>
+    <a class="lnk" href="#space">Your space</a>
+    <a class="lnk" href="#cta">Overview ↗</a>
+  </nav>
+  <a class="buy" href="#cta">Buy now</a>
+</header>
+<nav class="index" aria-label="Sections">
+  <a href="#layers" data-sec="layers">Experience <b>01</b></a>
+  <a href="#space" data-sec="space">Your space <b>02</b></a>
+  <a href="#journeys" data-sec="journeys">Explore <b>03</b></a>
+</nav>
+
+<main id="top">
+  <section class="hero" id="hero">
+    <h1 class="sr">VEIL 01. One headset. Every world. More room to work, more ways to play.</h1>
+    <div class="mark" aria-hidden="true"><span>V</span><span>E</span><span>I</span><span>L</span></div>
+    <div class="hero-foot" aria-hidden="true"><p>More room<br>to work.</p><p>More ways<br>to play.</p></div>
+  </section>
+
+  <div class="story">
+    <section class="chapter" id="layers"><div class="in">
+      <span class="eyebrow">VEIL / Inside out</span>
+      <h2>A new world.<br>Built in every layer.</h2>
+      <p class="lede">One sheet of curved glass. A machined frame. And a whole new way of seeing, just behind it.</p>
+      <p class="caption" data-cap="1">Glass and aluminium, shaped as one.</p>
+    </div></section>
+    <section class="chapter" id="explode"><div class="in">
+      <span class="eyebrow">Engineering</span>
+      <h2>Every part, in its place.</h2>
+      <p class="lede">Visor, logic board, lenses and light seal, stacked with sub-millimetre care.</p>
+      <p class="caption" data-cap="2">Two lenses. One wide, sharp view.</p>
+    </div></section>
+    <section class="chapter" id="eyes"><div class="in side">
+      <span class="eyebrow">Eye tracking</span>
+      <h2>It sees where<br>you look.</h2>
+      <p class="lede">Rings of invisible light read your eyes hundreds of times a second, so a glance is all it takes.</p>
+      <div class="stat-row"><div><strong>8</strong><span>LEDs per eye</span></div><div><strong>&lt;1°</strong><span>gaze accuracy</span></div></div>
+    </div></section>
+    <section class="chapter" id="sensors"><div class="in side">
+      <span class="eyebrow">Sensors</span>
+      <h2>Sensors that<br>read the room.</h2>
+      <p class="lede">Cameras and depth sensors map your space and your hands, so digital things sit naturally in the real world.</p>
+      <div class="stat-row"><div><strong>12</strong><span>cameras</span></div><div><strong>6</strong><span>microphones</span></div><div><strong>1</strong><span>depth sensor</span></div></div>
+    </div></section>
+    <section class="chapter" id="sound"><div class="in low">
+      <span class="eyebrow">Spatial audio</span>
+      <h2>Sound that<br>surrounds you.</h2>
+      <p class="lede">Two small speaker pods sit just above your ears, so sound seems to come from the space around you.</p>
+      <div class="wave" aria-hidden="true"><i></i><i></i><i></i></div>
+    </div></section>
+  </div>
+
+  <section id="space" aria-label="Spatial interface demo">
+    <div class="sec-head wrap">
+      <span class="eyebrow">VEIL OS</span>
+      <h2>Step into your space.</h2>
+      <p>Try it here. Open an app, change your world, or press play.</p>
+    </div>
+    <div class="os" id="os">
+      <img class="wall" id="wallA" src="img/coast.jpg" alt="">
+      <img class="wall next" id="wallB" src="img/coast.jpg" alt="">
+      <div class="os-top"><span>VEIL OS</span><span id="clock">09:41</span></div>
+      <div class="toast glass" id="toast" role="status"></div>
+
+      <div class="win glass show" id="w-home" data-win="home">
+        <div class="win-bar"><h3>Home</h3></div>
+        <div class="apps">
+          <button class="app" data-open="desktop"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></i><b>Desktop</b><small>Your connected workspace</small></button>
+          <button class="app" data-open="browser"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg></i><b>Browser</b><small>Follow your curiosity</small></button>
+          <button class="app" data-open="notes"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><path d="M6 3h9l3 3v15H6z"/><path d="M9 10h6M9 14h6M9 18h3"/></svg></i><b>Notes</b><small>A little room to think</small></button>
+          <button class="app" data-open="gallery"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 16 5-5 4 4 3-3 6 6"/><circle cx="16" cy="9" r="1.5"/></svg></i><b>Gallery</b><small>Change your world</small></button>
+          <button class="app" data-open="cinema"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="m10 9 5 3-5 3z" fill="#fff"/></svg></i><b>Cinema</b><small>A screen of your own</small></button>
+          <button class="app" data-open="orbit"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-25 12 12)"/></svg></i><b>Orbit</b><small>Step inside the story</small></button>
+        </div>
+        <div class="feat">
+          <button data-open="desktop"><img src="img/earth.jpg" alt=""><small>ROOM TO CREATE</small><b>Spread out your work.</b><span>Desktop</span></button>
+          <button data-open="cinema"><img src="img/planet.jpg" alt=""><small>A MOMENT FOR YOU</small><b>Beyond the everyday.</b><span>Cinema</span></button>
+          <button data-open="orbit"><img src="img/nebula.jpg" alt=""><small>VEIL ORIGINAL</small><b>Find a new dimension.</b><span>Orbit</span></button>
+        </div>
+      </div>
+
+      <div class="win glass wide" data-win="desktop">
+        <div class="win-bar"><button class="back" data-open="home">← Home</button><h3>Desktop</h3><button class="ic-btn" data-open="home" aria-label="Close">×</button></div>
+        <div class="desk">
+          <div class="card"><h4>November</h4><div class="cal"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span class="t">10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span></div></div>
+          <div class="card"><h4>Launch plan</h4><span style="font-size:.75rem;color:rgba(255,255,255,.6)">Design review</span><div class="bar"><i style="width:82%"></i></div><span style="font-size:.75rem;color:rgba(255,255,255,.6)">Build</span><div class="bar"><i style="width:56%"></i></div><span style="font-size:.75rem;color:rgba(255,255,255,.6)">Testing</span><div class="bar"><i style="width:24%"></i></div></div>
+          <div class="card"><h4>Inbox</h4><ul style="padding:0"><li>Studio <span>9:12</span></li><li>Mira <span>8:40</span></li><li>Weekly notes <span>Mon</span></li><li>Travel <span>Sun</span></li></ul></div>
+        </div>
+      </div>
+
+      <div class="win glass" data-win="browser">
+        <div class="win-bar"><button class="back" data-open="home">← Home</button><h3>Browser</h3><button class="ic-btn" data-open="home" aria-label="Close">×</button></div>
+        <div class="url">🔒 field-notes.example / northern-lights</div>
+        <div class="page"><div><h4>Chasing the northern lights</h4><p>Where to go, when to look up, and how to photograph the sky when it starts to move.</p><button class="pbtn" id="saveSite">Save website</button></div><img src="img/aurora.jpg" alt="Aurora over snowy mountains"></div>
+      </div>
+
+      <div class="win glass notes" data-win="notes">
+        <div class="win-bar"><button class="back" data-open="home">← Home</button><h3>Notes</h3><button class="ic-btn" data-open="home" aria-label="Close">×</button></div>
+        <label class="sr" for="note">Note</label>
+        <textarea id="note">Ideas for the weekend
+- Finish the cabin sketches
+- Call Mira about the trip
+- Try the aurora film in Cinema</textarea>
+        <div class="row"><button class="pbtn ghost" id="focus">Enter focus mode</button><button class="pbtn" id="dl">Download note ↓</button></div>
+      </div>
+
+      <div class="win glass" data-win="gallery">
+        <div class="win-bar"><button class="back" data-open="home">← Home</button><h3>Gallery</h3><button class="ic-btn" data-open="home" aria-label="Close">×</button></div>
+        <div class="walls">
+          <button class="on" data-wall="img/coast.jpg"><img src="img/coast.jpg" alt=""><b>Silver coast</b></button>
+          <button data-wall="img/dunes.jpg"><img src="img/dunes.jpg" alt=""><b>Desert moon</b></button>
+          <button data-wall="img/aurora.jpg"><img src="img/aurora.jpg" alt=""><b>Alpine aurora</b></button>
+        </div>
+      </div>
+
+      <div class="win glass wide" data-win="cinema">
+        <div class="win-bar"><button class="back" data-open="home">← Home</button><h3>Cinema</h3><button class="ic-btn" id="expand" aria-label="Expand screen">↗</button><button class="ic-btn" data-open="home" aria-label="Close">×</button></div>
+        <div class="screen" id="screen"><img src="img/planet.jpg" alt="Astronaut capsule beneath a ringed planet"><div class="t"><button class="ic-btn" id="cplay" aria-label="Play">▶</button><div class="bar"><i id="cprog" style="width:0"></i></div><span id="ctime">0:00</span></div></div>
+      </div>
+
+      <div class="win glass" data-win="orbit">
+        <div class="win-bar"><button class="back" data-open="home">← Home</button><h3>Orbit</h3><button class="ic-btn" data-open="home" aria-label="Close">×</button></div>
+        <div class="orbit-stage"><h4 id="otext">Leave gravity behind.</h4><p>A three-minute journey through deep space, made for VEIL.</p><button class="pbtn" id="obegin">Begin experience ↗</button></div>
+      </div>
+
+      <div class="dock glass" role="tablist" aria-label="Spaces">
+        <button class="on" data-open="home">Home</button><button data-open="desktop">Work</button><button data-open="cinema">Watch</button><button data-open="orbit">Play</button>
+      </div>
+      <button class="replay" id="replayOS">Replay intro ↺</button>
+    </div>
+  </section>
+
+  <section id="journeys">
+    <div class="wrap">
+      <div class="sec-head" style="text-align:left">
+        <span class="eyebrow">Immersive films</span>
+        <h2>A little further away.</h2>
+      </div>
+      <div class="jgrid">
+        <button class="jcard" data-chapter="0"><img src="img/coast.jpg" alt=""><small>FEATURED JOURNEY · 00:19</small><b>Beyond the everyday</b><span>Begin at the silver coast</span><i class="play glass">▷</i></button>
+        <button class="jcard" data-chapter="1"><img src="img/dunes.jpg" alt=""><small>CHAPTER 02</small><b>In stillness</b><span>Desert moon</span><i class="play glass">▷</i></button>
+        <button class="jcard" data-chapter="2"><img src="img/aurora.jpg" alt=""><small>CHAPTER 03</small><b>After the light</b><span>Alpine aurora</span><i class="play glass">▷</i></button>
+      </div>
+    </div>
+  </section>
+
+  <section id="beyond" aria-label="Make room for the extraordinary">
+    <img src="img/astronaut.jpg" alt="Astronaut standing in a frozen, rocky landscape" loading="lazy">
+    <h2>Make room for the extraordinary.</h2>
+  </section>
+
+  <section id="cta">
+    <div class="wrap">
+      <h2>Your next world<br>starts here.</h2>
+      <p>More room to work. More ways to play. One space that is entirely yours.</p>
+      <a class="shop" href="#cta">Shop VEIL 01 <span aria-hidden="true">↗</span></a>
+      <p class="price">VEIL 01 headset<b>$1,499</b></p>
+      <button class="again" id="replayStory">Replay the story ↑</button>
+    </div>
+  </section>
+</main>
+
+<div class="player" id="player" role="dialog" aria-modal="true" aria-label="Film player">
+  <img src="img/coast.jpg" alt=""><img src="img/dunes.jpg" alt=""><img src="img/aurora.jpg" alt="">
+  <div class="p-ui">
+    <div class="p-top"><button class="back glass" id="pclose">‹ Your space</button><span class="eyebrow">VEIL Cinema</span></div>
+    <div>
+      <div class="p-title"><small id="pch">FEATURED JOURNEY</small><h2 id="pname">Beyond the everyday</h2></div>
+      <div class="p-ctl"><button class="ic-btn glass" id="ptoggle" aria-label="Pause">❚❚</button><div class="bar"><i id="pprog"></i></div><span id="ptime" style="font-size:.8rem">0:00 / 0:19</span></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="f-grid">
+      <div><span class="eyebrow">VEIL / Spatial computing</span><h3>A little less here.<br>A lot more everywhere.</h3><p>Designed to give you more room.</p></div>
+      <div><h4>Explore</h4><ul><li><a href="#layers">Spatial experience <span>↗</span></a></li><li><a href="#explode">Inside VEIL <span>↗</span></a></li><li><a href="#sound">Spatial audio <span>↗</span></a></li><li><a href="#journeys">Immersive cinema <span>↗</span></a></li></ul></div>
+      <div><h4>The collection</h4><ul><li><a href="#cta">VEIL 01 headset <span>↗</span></a></li><li><a href="#cta">Motion controllers <span>↗</span></a></li><li><a href="#cta">All accessories <span>↗</span></a></li><li><a href="#cta">Your bag <span>↗</span></a></li></ul></div>
+    </div>
+    <div class="legal"><span>© 2026 VEIL. Concept project, designed and built by Jingyuan.</span><span>Photos: Unsplash · 3D: three.js</span></div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const loadbar = $('#loadbar');
+loadbar.style.width = '35%';
+
+/* ================= 3D headset (modelled in code) ================= */
+const canvas = $('#gl');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+const camera = new THREE.PerspectiveCamera(30, 1, .1, 100);
+camera.position.set(0, 0, 8);
+const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(3, 4, 5); scene.add(key);
+const rimL = new THREE.DirectionalLight(0xffe2c4, 1.4); rimL.position.set(-5, 1, -2); scene.add(rimL);
+scene.add(new THREE.AmbientLight(0xffffff, .25));
+
+// visor outline (x: ±1.2, y: ±.6): soft pillow corners and a gentle nose bridge
+function visorShape(k = 1) {
+  const w = 1.2 * k, h = .6 * k, rt = .5 * k, rb = .42 * k, s = new THREE.Shape();
+  s.moveTo(-w + rt, h); s.lineTo(w - rt, h); s.bezierCurveTo(w - rt * .2, h, w, h - rt * .2, w, h - rt); s.lineTo(w, -h + rb);
+  s.bezierCurveTo(w, -h + rb * .15, w - rb * .15, -h, w - rb, -h); s.lineTo(.58 * k, -h);
+  s.bezierCurveTo(.38 * k, -h, .3 * k, -h + .24 * k, 0, -h + .25 * k);
+  s.bezierCurveTo(-.3 * k, -h + .24 * k, -.38 * k, -h, -.58 * k, -h);
+  s.lineTo(-w + rb, -h); s.bezierCurveTo(-w + rb * .15, -h, -w, -h + rb * .15, -w, -h + rb); s.lineTo(-w, h - rt);
+  s.bezierCurveTo(-w, h - rt * .2, -w + rt * .2, h, -w + rt, h);
+  return s;
+}
+const RX = 1.2, RY = 2.2;
+const surf = (x, y, dz = 0) => new THREE.Vector3(Math.sin(x / RX) * (RX + dz), Math.sin(y / RY) * (RY + dz), (RX + dz) * (Math.cos(x / RX) - 1) + (RY) * (Math.cos(y / RY) - 1) + dz * 0);
+
+const headset = new THREE.Group(); scene.add(headset);
+const parts = {}; // movable groups for the exploded view
+['visor', 'frame', 'board', 'lenses', 'seal', 'band'].forEach(n => { parts[n] = new THREE.Group(); headset.add(parts[n]); });
+
+const alu = new THREE.MeshStandardMaterial({ color: 0xb4b8be, metalness: 1, roughness: .18 });
+const aluDark = new THREE.MeshStandardMaterial({ color: 0x6d7178, metalness: 1, roughness: .32 });
+const glassMat = new THREE.MeshPhysicalMaterial({ color: 0x000000, metalness: 0, roughness: .05, clearcoat: 1, clearcoatRoughness: .01, envMapIntensity: .55, specularIntensity: .6, alphaTest: .5, side: THREE.DoubleSide });
+
+// visor glass: subdivided plane bent onto a double curve, clipped by an alpha mask of the outline
+{
+  const W = 2.5, H = 1.3, g = new THREE.PlaneGeometry(W, H, 160, 80), p = g.attributes.position;
+  for (let i = 0; i < p.count; i++) { const v = surf(p.getX(i), p.getY(i)); p.setXYZ(i, v.x, v.y, v.z); }
+  g.computeVertexNormals();
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 512; const x = c.getContext('2d');
+  x.fillStyle = '#000'; x.fillRect(0, 0, 1024, 512); x.fillStyle = '#fff'; x.beginPath();
+  visorShape(.985).getPoints(200).forEach((pt, i) => { const px = (pt.x / W + .5) * 1024, py = (.5 - pt.y / H) * 512; i ? x.lineTo(px, py) : x.moveTo(px, py); });
+  x.fill(); glassMat.alphaMap = new THREE.CanvasTexture(c);
+  parts.visor.add(new THREE.Mesh(g, glassMat));
+}
+// outline points on the surface, reused by rim + body
+const outline = visorShape(1).getSpacedPoints(260);
+outline.pop();
+{
+  // thin polished lip where glass meets frame
+  const curve = new THREE.CatmullRomCurve3(outline.map(p => surf(p.x, p.y, -.004)), true);
+  parts.frame.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 520, .022, 12, true), alu));
+  // frame band: a rounded loft that bulges outward then tucks back, like a machined aluminium ring
+  const rings = [[1.0, 0, -.02], [1.03, .03, -.12], [1.035, .035, -.26], [1.02, .02, -.38], [.97, -.02, -.46]];
+  const n = outline.length, pos = [], idx = [];
+  rings.forEach(([k, dz, zoff]) => outline.forEach(p => { const v = surf(p.x * k, p.y * (k + (k - 1) * .4), dz); v.z += zoff; pos.push(v.x, v.y, v.z); }));
+  for (let r = 0; r < rings.length - 1; r++) for (let i = 0; i < n; i++) { const j = (i + 1) % n, a = r * n; idx.push(a + i, a + i + n, a + j, a + j, a + i + n, a + j + n); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
+  parts.frame.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: 0x7c8087, metalness: 1, roughness: .22, side: THREE.DoubleSide })));
+  // digital crown (top right) and button (top left), sitting on the frame's top edge
+  const crown = new THREE.Group();
+  crown.add(new THREE.Mesh(new THREE.CylinderGeometry(.08, .08, .07, 48), alu));
+  const knurl = new THREE.Mesh(new THREE.CylinderGeometry(.083, .083, .045, 48, 1, true), new THREE.MeshStandardMaterial({ color: 0x9a9ea5, metalness: 1, roughness: .5, wireframe: true }));
+  crown.add(knurl); crown.position.copy(surf(.92, .62)); crown.position.z -= .26; crown.position.y += .03; parts.frame.add(crown);
+  const btn = new THREE.Mesh(new THREE.CapsuleGeometry(.03, .22, 8, 16), alu); btn.rotation.z = Math.PI / 2;
+  btn.position.copy(surf(-.85, .62)); btn.position.z -= .26; btn.position.y += .025; parts.frame.add(btn);
+}
+// knit fabric texture
+function knitTex(c1, c2) {
+  const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
+  x.fillStyle = c1; x.fillRect(0, 0, 128, 128); x.strokeStyle = c2; x.lineWidth = 2;
+  for (let y = 0; y < 128; y += 6) for (let i = 0; i < 128; i += 6) { x.beginPath(); x.moveTo(i, y); x.lineTo(i + 3, y + 5); x.lineTo(i + 6, y); x.stroke(); }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
+}
+const fabric = new THREE.MeshStandardMaterial({ color: 0x9a9da2, roughness: .95, map: knitTex('#8e9196', '#6c6f74'), bumpMap: knitTex('#888', '#222'), bumpScale: 3 });
+fabric.map.repeat.set(40, 4); fabric.bumpMap.repeat.set(40, 4);
+// light seal: a soft knit cushion behind the frame, with lens openings
+const LENS = [-.47, .47];
+{
+  const s = visorShape(.77); /* .77 + bevel keeps the seal inside the frame's side walls (x≈1.0) */ LENS.forEach(lx => { const h = new THREE.Path(); h.absarc(lx, .03, .3, 0, Math.PI * 2, true); s.holes.push(h); });
+  const g = new THREE.ExtrudeGeometry(s, { depth: .1, bevelEnabled: true, bevelSize: .06, bevelThickness: .12, bevelSegments: 10, curveSegments: 64 });
+  const sealMat = new THREE.MeshStandardMaterial({ color: 0x6e7177, roughness: .97, map: knitTex('#6a6d73', '#55585e'), bumpMap: knitTex('#888', '#222'), bumpScale: 2 });
+  sealMat.map.repeat.set(10, 5); sealMat.bumpMap.repeat.set(10, 5);
+  const m = new THREE.Mesh(g, sealMat); m.position.z = -.76; m.scale.set(1, .95, 1); parts.seal.add(m);
+}
+// lenses + eye-tracking LEDs
+const ledMat = new THREE.MeshBasicMaterial({ color: 0x8fd8ff, transparent: true, opacity: 0 });
+LENS.forEach(lx => {
+  // seal spans z -.88..-.54; the lens group sits inside it so nothing pokes out the back
+  const g = new THREE.Group(); g.position.set(lx, .028, -.6);
+  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(.29, .29, .3, 64, 1, true), new THREE.MeshStandardMaterial({ color: 0x1b1d21, metalness: .6, roughness: .45, side: THREE.DoubleSide }));
+  barrel.rotation.x = Math.PI / 2; g.add(barrel);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(.29, .018, 16, 64), aluDark); ring.position.z = -.15; g.add(ring);
+  // shallow cap (r .4, 0.7 rad): apex at z -.8, flush with the seal's opening
+  const lens = new THREE.Mesh(new THREE.SphereGeometry(.4, 64, 24, 0, Math.PI * 2, 0, .7), new THREE.MeshPhysicalMaterial({ color: 0x0a0c10, roughness: .02, clearcoat: 1, metalness: .2 }));
+  lens.rotation.x = -Math.PI / 2; lens.position.z = .2; g.add(lens);
+  for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2, d = new THREE.Mesh(new THREE.SphereGeometry(.016, 12, 8), ledMat); d.position.set(Math.cos(a) * .272, Math.sin(a) * .272, -.165); /* on the ring, inside the opening */ g.add(d); }
+  parts.lenses.add(g);
+});
+// logic board (visible when exploded)
+let boardMat;
+{
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 512; const x = c.getContext('2d');
+  x.fillStyle = '#0f3b2c'; x.fillRect(0, 0, 1024, 512);
+  const r = (a, b) => a + Math.random() * (b - a);
+  x.strokeStyle = 'rgba(160,220,180,.35)'; x.lineWidth = 2;
+  for (let i = 0; i < 160; i++) { let px = r(0, 1024), py = r(0, 512); x.beginPath(); x.moveTo(px, py); for (let k = 0; k < 4; k++) { Math.random() > .5 ? px += r(-120, 120) : py += r(-80, 80); x.lineTo(px, py); } x.stroke(); }
+  for (let i = 0; i < 26; i++) { const w = r(30, 110), h = r(20, 70), px = r(40, 960), py = r(40, 440); x.fillStyle = '#16181b'; x.fillRect(px, py, w, h); x.fillStyle = 'rgba(255,255,255,.12)'; x.fillRect(px + 4, py + 4, w - 8, 2); }
+  x.fillStyle = '#c9a85a'; for (let i = 0; i < 300; i++) x.fillRect(r(0, 1024), r(0, 512), 3, 3);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  const s = visorShape(.9); LENS.forEach(lx => { const h = new THREE.Path(); h.absarc(lx, .02, .31, 0, Math.PI * 2, true); s.holes.push(h); });
+  const g = new THREE.ShapeGeometry(s, 48), uv = g.attributes.uv, p = g.attributes.position;
+  for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i) / 2.4 + .5, p.getY(i) / 1.2 + .5);
+  const m = new THREE.Mesh(g, boardMat = new THREE.MeshStandardMaterial({ map: t, metalness: .3, roughness: .55, side: THREE.DoubleSide, transparent: true })); m.position.z = -.4; parts.board.add(m);
+}
+// head band: a flat, wide knit strap swept around the back of the head (not a tube)
+{
+  const path = new THREE.CatmullRomCurve3([[.96, 0, -.74], [1.18, -.02, -1.3], [1.04, -.05, -2.0], [0, -.06, -2.4], [-1.04, -.05, -2.0], [-1.18, -.02, -1.3], [-.96, 0, -.74]] /* ends start inside the frame's side wall (x≈1.0, z -.57..-1.0) so there is no gap */.map(a => new THREE.Vector3(...a)));
+  const N = 160, HW = .27, T = .045; // half-height, half-thickness of the strap
+  const rr = new THREE.Shape(); rr.moveTo(-T, -HW + T); rr.lineTo(-T, HW - T); rr.quadraticCurveTo(-T, HW, 0, HW); rr.quadraticCurveTo(T, HW, T, HW - T);
+  rr.lineTo(T, -HW + T); rr.quadraticCurveTo(T, -HW, 0, -HW); rr.quadraticCurveTo(-T, -HW, -T, -HW + T);
+  const sec = rr.getSpacedPoints(40).slice(0, -1).map(p => [p.x, p.y]);
+  const pos = [], uv = [], idx = [], up = new THREE.Vector3(0, 1, 0);
+  for (let i = 0; i <= N; i++) {
+    const t = i / N, p = path.getPoint(t), tan = path.getTangent(t), nrm = new THREE.Vector3().crossVectors(up, tan).normalize();
+    sec.forEach(([cx, cy], k) => { pos.push(p.x + nrm.x * cx, p.y + cy, p.z + nrm.z * cx); uv.push(t, k / sec.length); });
+  }
+  const K = sec.length;
+  for (let i = 0; i < N; i++) for (let k = 0; k < K; k++) { const a = i * K + k, b = i * K + (k + 1) % K; idx.push(a, a + K, b, b, a + K, b + K); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals();
+  fabric.transparent = true; parts.band.add(new THREE.Mesh(g, fabric));
+}
+// sensors on the lower visor: always-visible dark camera rings, plus a glow for the sensors chapter
+const sensorMat = new THREE.MeshBasicMaterial({ color: 0x7fc4ff, transparent: true, opacity: 0, depthWrite: false });
+[[-.95, -.38], [.95, -.38], [-.6, -.48], [.6, -.48], [-.2, -.3], [.2, -.3]].forEach(([sx, sy]) => {
+  const look = surf(sx, sy).multiplyScalar(2).add(new THREE.Vector3(0, 0, 2));
+  const d = new THREE.Mesh(new THREE.CircleGeometry(.04, 24), sensorMat); d.position.copy(surf(sx, sy, .01)); d.lookAt(look); parts.visor.add(d);
+});
+// scan line that sweeps the visor
+const scan = new THREE.Mesh(new THREE.PlaneGeometry(.015, 1.05), new THREE.MeshBasicMaterial({ color: 0xbfe3ff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+scan.position.z = .08; parts.visor.add(scan);
+headset.position.y = -.05;
+loadbar.style.width = '80%';
+
+/* ---------- animated state, driven by scroll ---------- */
+const S = { rx: .1, ry: -.38, rz: 0, x: -.52, y: -.2, s: 1.02, e: 0, led: 0, sensor: 0, band: 1, fade: 1 };
+const I = { y: 0, s: 1, r: 0 }; // intro offsets, kept apart from the scroll-driven state
+let mobile = innerWidth < 760;
+function size() {
+  mobile = innerWidth < 760;
+  renderer.setSize(innerWidth, innerHeight, false);
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+}
+size(); addEventListener('resize', size);
+let px = 0, py = 0, tpx = 0, tpy = 0;
+addEventListener('pointermove', e => { tpx = e.clientX / innerWidth - .5; tpy = e.clientY / innerHeight - .5; });
+const clock = new THREE.Clock();
+function frame() { draw(); requestAnimationFrame(frame); }
+// lets a hidden/background preview advance one frame on demand
+window.__veilDraw = () => { if (window.gsap) { ScrollTrigger.update(); gsap.ticker.tick(); } draw(); };
+function draw() {
+  const t = clock.getElapsedTime();
+  px += (tpx - px) * .05; py += (tpy - py) * .05;
+  // shrink on narrow/tall screens so the visor always fits the width
+  const fit = Math.min(1, innerWidth / innerHeight / 1.4 + .15, innerWidth / innerHeight * .9) * 1.3;
+  headset.rotation.set(S.rx + py * .15, S.ry + I.r + px * .3 + (reduce ? 0 : Math.sin(t * .4) * .03), S.rz);
+  // narrow screens keep all text at the top, so the headset stays centred and in the lower half
+  headset.position.set(innerWidth < 900 ? (Math.sin(S.ry) * S.band * 1.24 - S.e * .53) * S.s * fit : S.x, /* narrow: offset the trailing strap so the whole thing looks centred */ (innerWidth < 900 ? Math.min(S.y, -.2) : S.y) + I.y + (reduce ? 0 : Math.sin(t * .8) * .03) + (mobile ? .15 : 0), 0);
+  headset.scale.setScalar(S.s * I.s * fit);
+  // exploded view lays the layers out in a row (visor left, light seal right)
+  // each layer lifts off in turn (visor first), with its own ease, so the split reads as one smooth motion
+  const ep = k => { const v = Math.min(1, Math.max(0, (S.e - k * .15) / .55)); return v * v * (3 - 2 * v); };
+  const ev = ep(0), ef = ep(1), eb = ep(2), es = ep(3);
+  // layers spread front-to-back on one axis; seen from the side they line up left to right
+  parts.visor.position.set(0, 0, 1.7 * ev);
+  parts.frame.position.set(0, 0, .85 * ef);
+  parts.board.position.set(0, 0, 0);
+  parts.lenses.position.set(0, 0, -.85 * eb);
+  parts.seal.position.set(0, 0, -1.7 * es);
+  // band and board fade rather than pop (the flat board would poke through the curved shell when assembled)
+  fabric.opacity = Math.min(S.band, 1 - Math.min(1, S.e * 4));
+  parts.band.visible = fabric.opacity > .01;
+  boardMat.opacity = Math.min(1, Math.max(0, (S.e - .1) * 4));
+  parts.board.visible = boardMat.opacity > .01;
+  ledMat.opacity = S.led * (.6 + .4 * Math.sin(t * 6));
+  sensorMat.opacity = S.sensor * (.55 + .45 * Math.sin(t * 3));
+  scan.material.opacity = S.sensor * .35; scan.position.x = Math.sin(t * 1.4) * 1.05; scan.position.z = surf(scan.position.x, 0).z + .03;
+  canvas.style.opacity = S.fade;
+  if (S.fade > .01) renderer.render(scene, camera);
+}
+requestAnimationFrame(frame);
+loadbar.style.width = '100%'; setTimeout(() => loadbar.style.opacity = 0, 500);
+
+/* ================= GSAP: intro + scroll story ================= */
+gsap.registerPlugin(ScrollTrigger);
+const letters = $$('.mark span');
+function intro() {
+  if (reduce) { gsap.set(letters, { yPercent: 0, opacity: 1 }); return; }
+  const tl = gsap.timeline();
+  tl.fromTo(letters, { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 1.4, stagger: .1, ease: 'expo.out' })
+    .fromTo(letters, { '--sweep': '100%' }, { '--sweep': '-60%', duration: 2.4, ease: 'power2.inOut' }, .5)
+    .fromTo(I, { y: -2.4, s: .7, r: -.9 }, { y: 0, s: 1, r: 0, duration: 1.8, ease: 'expo.out' }, .5)
+    .fromTo('.hero-foot p', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 1, stagger: .1, ease: 'expo.out' }, 1.2)
+    .fromTo('.nav', { opacity: 0 }, { opacity: 1, duration: 1 }, 1);
+  return tl;
+}
+intro();
+
+if (!reduce) {
+  // hero: wordmark drifts up, headset turns to face you
+  gsap.to('.mark', { yPercent: -18, opacity: .25, ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true } });
+  gsap.to('.hero-foot', { opacity: 0, ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: '40% top', scrub: true } });
+  // Timeline units are viewport heights: hero = 1, each chapter = 1.5 (100vh sticky + 50vh hold).
+  // Chapter i reaches the top of the screen at 1 + 1.5i, so its pose tween ends there.
+  const story = gsap.timeline({ defaults: { ease: 'power2.inOut' }, scrollTrigger: { trigger: '#hero', start: 'top top', endTrigger: '.story', end: 'bottom bottom', scrub: 1 } });
+  const at = (i, d = 0) => 1 + 1.5 * i + d;
+  story
+    // 1 · layers: three-quarter view with the band wrapping behind, text above
+    .to(S, { rx: .14, ry: -.78, x: -.95, y: -.62, s: 1, duration: .75 }, at(0, -.75))
+    .to('[data-cap="1"]', { opacity: 1, duration: .15 }, at(0, .05))
+    .to(S, { ry: -.55, duration: .45 }, at(0))
+    .to('[data-cap="1"]', { opacity: 0, duration: .15 }, at(0, .4))
+    // 2 · explode: side view, layers laid out left to right
+    .to(S, { rx: .22, ry: -1.18, x: -.4, y: -.45, s: .66, band: 0, duration: .75 }, at(1, -.75))
+    .to(S, { e: 1, duration: .6, ease: 'power1.inOut' }, at(1, -.45))
+    .to(S, { ry: -1.04, duration: .45, ease: 'sine.inOut' }, at(1, .15))
+    .to('[data-cap="2"]', { opacity: 1, duration: .1 }, at(1, .2))
+    .to('[data-cap="2"]', { opacity: 0, duration: .1 }, at(1, .5))
+    // 3 · eye tracking: assembled back view on the left, text on the right
+    .to(S, { e: 0, rx: 0, ry: -Math.PI, x: -1.26, y: -.1, s: .92, duration: .75 }, at(2, -.75))
+    .to(S, { led: 1, duration: .25 }, at(2, -.1))
+    // 4 · sensors: front view from slightly below, left; text right
+    .to(S, { ry: 0, rx: -.14, x: -1.18, y: -.08, s: .95, led: 0, duration: .75 }, at(3, -.75))
+    .to(S, { sensor: 1, duration: .25 }, at(3, -.1))
+    // 5 · sound: large three-quarter view up top, heading along the bottom
+    .to(S, { ry: -.72, rx: .1, x: -1.1, y: .55, s: 1.12, band: 1, sensor: 0, duration: .75 }, at(4, -.75))
+    .to({}, { duration: .5 }, at(4));
+  // hide the 3D layer once the OS demo arrives
+  gsap.to(S, { fade: 0, ease: 'none', scrollTrigger: { trigger: '#space', start: 'top 85%', end: 'top 35%', scrub: true } });
+  // chapter copy fades in and out around its centre
+  $$('.chapter').forEach(c => {
+    const els = c.querySelectorAll('.eyebrow,h2,.lede,.stat-row,.wave');
+    // appear only once the sticky panel has (almost) docked, and be gone before it scrolls away,
+    // so headings never slide across the headset
+    gsap.timeline({ scrollTrigger: { trigger: c, start: 'top 12%', end: 'bottom bottom', scrub: true } })
+      .fromTo(els, { opacity: 0, y: 30 }, { opacity: 1, y: 0, stagger: .02, duration: .3, ease: 'power2.out' })
+      .to(els, { opacity: 1, duration: .4 })
+      .to(els, { opacity: 0, y: -30, stagger: .015, duration: .3, ease: 'power2.in' });
+  });
+  // beyond: slow zoom-out on the photo
+  gsap.to('#beyond img', { scale: 1, ease: 'none', scrollTrigger: { trigger: '#beyond', start: 'top bottom', end: 'bottom top', scrub: true } });
+  gsap.from('#beyond h2', { opacity: 0, y: 60, ease: 'power2.out', scrollTrigger: { trigger: '#beyond', start: 'top 60%', end: 'center center', scrub: true } });
+  gsap.from('#cta h2, #cta p, #cta .shop', { opacity: 0, y: 40, stagger: .1, duration: 1, ease: 'expo.out', scrollTrigger: { trigger: '#cta', start: 'top 70%' } });
+  gsap.from('.os', { scale: .92, opacity: 0, ease: 'power2.out', scrollTrigger: { trigger: '.os', start: 'top 90%', end: 'top 40%', scrub: true } });
+} else {
+  // reduced motion: no scroll choreography, so show the headset only in the hero and let chapters be plain text
+  S.ry = -.3; S.x = -.5;
+  ScrollTrigger.create({ trigger: '.story', start: 'top 60%', onEnter: () => S.fade = 0, onLeaveBack: () => S.fade = 1 });
+}
+// side index: only shown over the story and the OS demo, where it doesn't cover content
+ScrollTrigger.create({ trigger: '.story', start: 'top 60%', endTrigger: '#space', end: 'bottom 50%', onToggle: s => $('.index').classList.toggle('on', s.isActive) });
+ScrollTrigger.create({ trigger: '.os', start: 'top 80%', end: 'bottom 20%', onToggle: s => $('.index').classList.toggle('over', s.isActive) });
+// side index highlight
+$$('.index a').forEach(a => ScrollTrigger.create({ trigger: '#' + a.dataset.sec, start: 'top 55%', end: a.dataset.sec === 'layers' ? () => '+=' + $('.story').offsetHeight : 'bottom 55%', onToggle: s => a.classList.toggle('on', s.isActive) }));
+
+// ?y=1200 opens the page scrolled to that point (handy for previews and screenshots)
+const jumpY = +new URLSearchParams(location.search).get('y');
+if (jumpY) addEventListener('load', () => setTimeout(() => { scrollTo(0, jumpY); ScrollTrigger.update(); }, 300));
+
+$('#replayStory').addEventListener('click', () => { scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); setTimeout(intro, 900); });
+
+/* ================= VEIL OS demo ================= */
+const os = $('#os'), wins = $$('.win'), toast = $('#toast');
+const tick = () => { const d = new Date(); $('#clock').textContent = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); };
+tick(); setInterval(tick, 30000);
+function say(msg) { toast.textContent = msg; toast.classList.add('show'); clearTimeout(say.t); say.t = setTimeout(() => toast.classList.remove('show'), 2200); }
+const dockMap = { home: 'Home', desktop: 'Work', cinema: 'Watch', orbit: 'Play' };
+function open(name) {
+  wins.forEach(w => w.classList.toggle('show', w.dataset.win === name));
+  $$('.dock button').forEach(b => b.classList.toggle('on', b.textContent === dockMap[name]));
+  if (name !== 'cinema') { stopCinema(); setExpanded(false); }
+  // leaving Orbit puts back the wallpaper chosen in Gallery
+  if (name !== 'orbit' && os.classList.contains('orbiting')) { os.classList.remove('orbiting'); setWall($('[data-wall].on').dataset.wall); }
+  if (name !== 'notes') os.classList.remove('focus');
+}
+$$('[data-open]').forEach(b => b.addEventListener('click', () => open(b.dataset.open)));
+// wallpaper crossfade
+let front = $('#wallA'), backW = $('#wallB');
+function setWall(src) {
+  if (front.getAttribute('src') === src) return;
+  backW.src = src; backW.classList.remove('next'); front.classList.add('next');
+  [front, backW] = [backW, front];
+}
+$$('[data-wall]').forEach(b => b.addEventListener('click', () => { setWall(b.dataset.wall); $$('[data-wall]').forEach(x => x.classList.toggle('on', x === b)); say('Wallpaper set to ' + b.textContent.trim()); }));
+// browser + notes
+$('#saveSite').addEventListener('click', () => say('Saved to your reading list'));
+$('#focus').addEventListener('click', e => { const on = os.classList.toggle('focus'); e.currentTarget.textContent = on ? 'Leave focus mode' : 'Enter focus mode'; });
+$('#dl').addEventListener('click', () => {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([$('#note').value], { type: 'text/plain' })); a.download = 'veil-note.txt'; a.click(); URL.revokeObjectURL(a.href); say('Note downloaded');
+});
+// cinema
+let cTimer = null, cT = 0; const CLEN = 24;
+const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+function stopCinema() { clearInterval(cTimer); cTimer = null; $('#screen').classList.remove('playing'); $('#cplay').textContent = '▶'; $('#cplay').setAttribute('aria-label', 'Play'); }
+$('#cplay').addEventListener('click', () => {
+  if (cTimer) return stopCinema();
+  $('#screen').classList.add('playing'); $('#cplay').textContent = '❚❚'; $('#cplay').setAttribute('aria-label', 'Pause');
+  cTimer = setInterval(() => { cT = (cT + .25) % CLEN; $('#cprog').style.width = (cT / CLEN * 100) + '%'; $('#ctime').textContent = fmt(cT); }, 250);
+});
+function setExpanded(on) {
+  $('[data-win="cinema"]').style.width = on ? '96%' : '';
+  $('#expand').setAttribute('aria-label', on ? 'Shrink screen' : 'Expand screen'); $('#expand').textContent = on ? '↙' : '↗';
+}
+$('#expand').addEventListener('click', () => setExpanded(!$('[data-win="cinema"]').style.width));
+// orbit
+const lines = ['Leave gravity behind.', 'Drift past the rings.', 'Into the quiet dark.', 'You were never far from home.'];
+$('#obegin').addEventListener('click', e => {
+  const b = e.currentTarget; b.disabled = true; setWall('img/nebula.jpg'); os.classList.add('orbiting');
+  lines.forEach((l, i) => setTimeout(() => { $('#otext').textContent = l; if (i === lines.length - 1) { b.disabled = false; b.textContent = 'Play again ↺'; } }, i * 1800));
+});
+// replay OS intro
+$('#replayOS').addEventListener('click', () => {
+  open('home'); setWall('img/coast.jpg'); $$('[data-wall]').forEach((x, i) => x.classList.toggle('on', i === 0));
+  if (!reduce) gsap.fromTo('#w-home', { opacity: 0, scale: .9 }, { opacity: 1, scale: 1, duration: 1, ease: 'expo.out', clearProps: 'all' });
+});
+
+/* ================= film player ================= */
+const player = $('#player'), pimgs = $$('#player img');
+const chapters = [['FEATURED JOURNEY', 'Beyond the everyday'], ['CHAPTER 02', 'In stillness'], ['CHAPTER 03', 'After the light']];
+const PLEN = 19; let pT = 0, pTimer = null, pCh = 0, lastFocus = null;
+function showChapter(i) { pCh = i; pimgs.forEach((im, k) => im.classList.toggle('on', k === i)); $('#pch').textContent = chapters[i][0]; $('#pname').textContent = chapters[i][1]; }
+function playFilm() {
+  clearInterval(pTimer); $('#ptoggle').textContent = '❚❚'; $('#ptoggle').setAttribute('aria-label', 'Pause');
+  pTimer = setInterval(() => {
+    pT += .1; if (pT >= PLEN) { pT = 0; }
+    const ch = Math.min(2, Math.floor(pT / (PLEN / 3))); if (ch !== pCh) showChapter(ch);
+    $('#pprog').style.width = (pT / PLEN * 100) + '%'; $('#ptime').textContent = fmt(pT) + ' / ' + fmt(PLEN);
+  }, 100);
+}
+function pauseFilm() { clearInterval(pTimer); pTimer = null; $('#ptoggle').textContent = '▶'; $('#ptoggle').setAttribute('aria-label', 'Play'); }
+$$('.jcard').forEach(c => c.addEventListener('click', () => {
+  lastFocus = c; const i = +c.dataset.chapter; pT = i * PLEN / 3; showChapter(i);
+  player.classList.add('show'); document.body.style.overflow = 'hidden'; setBehind(true);
+  $('#pclose').focus(); // .player.show flips visibility instantly, so focus lands
+  playFilm();
+}));
+// while the player is open, the page behind can't be reached with Tab
+const behind = ['header.nav', '.index', 'main', 'footer'];
+function setBehind(on) { behind.forEach(s => $(s).inert = on); }
+function closeFilm() { pauseFilm(); player.classList.remove('show'); document.body.style.overflow = ''; setBehind(false); lastFocus && lastFocus.focus(); }
+$('#pclose').addEventListener('click', closeFilm);
+$('#ptoggle').addEventListener('click', () => pTimer ? pauseFilm() : playFilm());
+addEventListener('keydown', e => { if (e.key === 'Escape' && player.classList.contains('show')) closeFilm(); });
+</script>
+</body>
+</html>
